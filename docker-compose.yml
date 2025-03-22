@@ -1,0 +1,31 @@
+services:
+  web:
+    build: .
+    container_name: customer_support_app
+    restart: always
+    ports:
+      - "8000:8000"
+    networks:
+      - custom_network
+    volumes:
+      - ./db.sqlite3:/app/db.sqlite3  # Ensure the database file persists
+
+  redis:
+    image: redis:latest
+    restart: always
+    networks:
+      - custom_network
+
+  celery:
+    build: .
+    container_name: customer_support_celery
+    command: celery -A customer_support worker --loglevel=info
+    depends_on:
+      - redis
+      - web
+    networks:
+      - custom_network
+
+networks:
+  custom_network:
+    driver: bridge
