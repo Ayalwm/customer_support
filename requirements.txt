@@ -12,7 +12,12 @@ Django==5.1.7
 django-celery-beat==2.7.0
 django-timezone-field==7.1
 kombu==5.5.0
+pillow==11.1.0
+sqlalchemy
+celery[sqlalchemy]
+
 prompt_toolkit==3.0.50
+psycopg2-binary>=2.9,<3.0
 python-crontab==3.2.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1

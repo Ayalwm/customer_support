@@ -22,9 +22,13 @@ class Ticket(models.Model):
     description = models.TextField()
     priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-
+    email = models.EmailField(null=False, blank=False)  # Ensures email is always required
+    image_attachment = models.ImageField(upload_to='ticket_images/', null=True, blank=True)  # For photo upload
+    file_attachment = models.FileField(upload_to='ticket_files/', null=True, blank=True)  # For other file types
+    
+ 
     def due_date(self):
         """Determine when the ticket should be escalated based on priority."""
         if self.priority == 'high':
@@ -38,7 +42,7 @@ class Ticket(models.Model):
 
 class Comment(models.Model):
     ticket = models.ForeignKey(Ticket, related_name='comments', on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     email = models.EmailField()  # 📧 Store user's email
     comment = models.TextField()
     rating = models.PositiveIntegerField(default=0)  # ⭐ Star rating (1-5)

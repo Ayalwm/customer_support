@@ -1,0 +1,54 @@
+<!-- all_reviews.html -->
+<h2>All Reviews</h2>
+
+<div class="reviews-container">
+    {% for comment in reviews %}
+        <div class="review">
+            <p><strong>Review:</strong> {{ comment.comment }}</p>
+            <span><strong>By:</strong> {% if comment.user %}
+                {{ comment.user.username }}
+            {% else %}
+                {{ comment.email }}
+            {% endif %}
+            </span>
+            <span><strong>Rating:</strong>
+                {% for i in comment.stars_filled %}
+                ★
+            {% endfor %}
+            {% for i in comment.stars_empty %}
+                ☆
+            {% endfor %}
+            </span>
+            
+            
+            
+            
+            <hr>
+        </div>
+    {% empty %}
+        <p>No reviews yet.</p>
+    {% endfor %}
+</div>
+
+<!-- Scrollable container for reviews -->
+<style>
+    .reviews-container {
+        max-height: 600px; /* Adjust as needed */
+        overflow-y: auto; /* Makes the container scrollable */
+        padding: 20px;
+        border: 1px solid #ccc;
+    }
+    .review {
+        margin-bottom: 20px;
+        padding: 15px;
+        border: 1px solid #eee;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+    }
+    hr {
+        margin: 10px 0;
+    }
+</style>
+
+<!-- Link back to the ticket list -->
+<a href="{% url 'ticket_list' %}">Back to Ticket List</a>

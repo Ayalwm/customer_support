@@ -2,61 +2,101 @@
 
 {% block content %}
 <div class="container mt-4">
-    {% if user.is_staff %}
-        <h2 class="text-primary">All Tickets (Admin View)</h2>
+    <!-- ticket_list.html -->
+
+    {% if user.is_authenticated %}
+        {% if user.is_staff %}
+            <h2 class="text-primary">All Tickets (Admin View)</h2>
+        {% else %}
+            <h2 class="text-primary">Your Tickets</h2>
+        {% endif %}
     {% else %}
-        <h2 class="text-primary">Your Tickets</h2>
+        <h2 class="text-primary">Support Ticket System</h2>
     {% endif %}
 
     <a href="{% url 'create_ticket' %}" class="btn btn-primary mb-3">Create New Ticket</a>
+    <a href="{% url 'all_reviews' %}" class="btn btn-primary mb-3 ml-4">View All Reviews</a>
 
-    {% if tickets %}
-        <div class="table-responsive">
-            <table class="table table-hover table-bordered">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Title</th>
-                        <th>Description</th>
-                        <th>Status</th>
-                        <th>Priority</th>
-                        {% if user.is_staff %}<th>Created By</th>{% endif %}
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for ticket in tickets %}
+    {% if user.is_authenticated %}
+        {% if tickets %}
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered">
+                    <thead class="table-dark">
                         <tr>
-                            <td><strong>{{ ticket.title }}</strong></td>
-                            <td>{{ ticket.description|truncatewords:15 }}</td> <!-- Truncate long descriptions -->
-                            <td>
-                                <span class="badge 
-                                    {% if ticket.status == 'closed' %}bg-danger
-                                    {% elif ticket.status == 'in_progress' %}bg-warning
-                                    {% else %}bg-success{% endif %}">
-                                    {{ ticket.get_status_display }}
-                                </span>
-                            </td>
-                            <td>
-                                <span class="badge 
-                                    {% if ticket.priority == 'high' %}bg-danger
-                                    {% elif ticket.priority == 'medium' %}bg-warning
-                                    {% else %}bg-success{% endif %}">
-                                    {{ ticket.priority|title }}
-                                </span>
-                            </td>
-                            {% if user.is_staff %}
-                                <td>{{ ticket.created_by.username }}</td>
-                            {% endif %}
-                            <td>
-                                <a href="{% url 'update_ticket' ticket.id %}" class="btn btn-sm btn-outline-primary">Update</a>
-                            </td>
+                            <th>Title</th>
+                            <th>Description</th>
+                            <th>Status</th>
+                            <th>Priority</th>
+                            {% if user.is_staff %}<th>Created By</th>{% endif %}
+                            <th>Attachments</th> <!-- New column for attachments -->
+                            <th>Actions</th>
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+                    </thead>
+                    <tbody>
+                        {% for ticket in tickets %}
+                            <tr>
+                                <td><strong>{{ ticket.title }}</strong></td>
+                                <td>{{ ticket.description|truncatewords:15 }}</td> <!-- Truncate long descriptions -->
+                                <td>
+                                    <span class="badge 
+                                        {% if ticket.status == 'closed' %}bg-danger
+                                        {% elif ticket.status == 'in_progress' %}bg-warning
+                                        {% else %}bg-success{% endif %}">
+                                        {{ ticket.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge 
+                                        {% if ticket.priority == 'high' %}bg-danger
+                                        {% elif ticket.priority == 'medium' %}bg-warning
+                                        {% else %}bg-success{% endif %}">
+                                        {{ ticket.priority|title }}
+                                    </span>
+                                </td>
+                                {% if user.is_staff %}
+                                    <td>
+                                        {% if ticket.created_by %}
+                                            {{ ticket.created_by.username }}
+                                        {% else %}
+                                            <span class="text-muted">Guest</span>
+                                        {% endif %}
+                                    </td>
+                                {% endif %}
+                                <td>
+                                    <!-- Display image attachment if available -->
+                                    {% if ticket.image_attachment %}
+                                        <div>
+                                            <strong>Image:</strong>
+                                            <img src="{{ ticket.image_attachment.url }}" alt="Ticket Image" style="max-width: 100px; max-height: 100px; display: block;"/>
+                                        </div>
+                                    {% else %}
+                                        <span class="text-muted">No Image</span>
+                                    {% endif %}
+                                
+                                    <!-- Display file attachment if available -->
+                                    {% if ticket.file_attachment %}
+                                        <div style="margin-top: 10px;">
+                                            <strong>File:</strong>
+                                            <a href="{{ ticket.file_attachment.url }}" target="_blank" class="btn btn-sm btn-outline-secondary">Download File</a>
+                                        </div>
+                                    {% else %}
+                                        <span class="text-muted">No File</span>
+                                    {% endif %}
+                                </td>
+                                
+                                <td>
+                                    <a href="{% url 'update_ticket' ticket.id %}" class="btn btn-sm btn-outline-primary">Update</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="alert alert-info">No tickets yet.</p>
+        {% endif %}
     {% else %}
-        <p class="alert alert-info">No tickets yet.</p>
+        <p class="alert alert-warning">Please log in to view your tickets.</p>
     {% endif %}
 </div>
 {% endblock %}

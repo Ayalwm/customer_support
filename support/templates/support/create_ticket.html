@@ -3,7 +3,7 @@
 {% block content %}
 <h2>Submit a Ticket</h2>
 
-<form method="post" style="max-width: 400px; padding: 15px; border: 1px solid #ddd; border-radius: 5px;">
+<form method="post"  enctype="multipart/form-data" style="max-width: 400px; padding: 15px; border: 1px solid #ddd; border-radius: 5px;">
     {% csrf_token %}
     {{ form.as_p }}
 

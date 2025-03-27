@@ -1,18 +1,18 @@
 from celery import shared_task
 from django.core.mail import send_mail
 from django.utils.timezone import now, timedelta
-from django.contrib.auth import get_user_model
+from django.conf import settings  # Import Django settings
 from .models import Ticket
 
 @shared_task
 def send_ticket_reminders():
     priority_timing = {
-        'high': 1,  # 1 day
-        'medium': 2,  # 2 days
-        'low': 3   # 3 days
+        'high': 1,
+        'medium': 2,
+        'low': 3
     }
 
-    User = get_user_model()  # Get the user model dynamically
+    sent_count = 0
 
     for priority, days in priority_timing.items():
         overdue_tickets = Ticket.objects.filter(
@@ -21,16 +21,24 @@ def send_ticket_reminders():
             created_at__lte=now() - timedelta(days=days)
         )
 
+        if not overdue_tickets.exists():
+            print(f"No overdue tickets found for priority: {priority}")
+            continue
+
         for ticket in overdue_tickets:
+            if not ticket.email:
+                print(f"Skipping Ticket {ticket.id}: No email provided.")
+                continue
+
+            print(f"Sending reminder to: {ticket.email}")
+
             subject = f"Reminder: Ticket '{ticket.title}' Needs Attention"
             message = f"Your ticket '{ticket.title}' is still open and requires resolution."
-            recipient_list = [ticket.created_by.email]
 
-            # Notify the ticket owner
-            send_mail(subject, message, 'support@example.com', recipient_list)
+            try:
+                send_mail(subject, message, settings.EMAIL_HOST_USER, [ticket.email])
+                sent_count += 1
+            except Exception as e:
+                print(f"Failed to send email for Ticket {ticket.id}: {e}")
 
-            # Notify the admins
-            admin_emails = [admin.email for admin in User.objects.filter(is_staff=True)]
-            send_mail(subject, f"Ticket '{ticket.title}' is still unresolved.", 'support@example.com', admin_emails)
-
-    return f"{overdue_tickets.count()} reminders sent."
+    return f"{sent_count} reminders sent."

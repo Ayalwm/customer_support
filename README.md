@@ -25,17 +25,17 @@ DEFAULT_FROM_EMAIL=gcgh.17@gmail.com
 
 DJANGO_SECRET_KEY=your_secret_key
 
-REDIS_URL=redis://redis:6379/0
-SITE_URL=http://127.0.0.1:8000
+REDIS_URL = sqla+postgresql://postgres:password@db:5432/customer_support
+CELERY_URL = db+postgresql://postgres:password@db:5432/customer_support
+
+SITE_URL=http://127.0.0.1:8080
+POSTGRES_DB=customer_support
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=password
+DATABASE_URL=postgres://postgres:password@db:5432/customer_support
 ```
 
-### 3. Create a Custom Docker Network (Optional)
-
-```sh
-docker network create custom_network
-```
-
-### 4. Build and Start the Containers
+### 3. Build and Start the Containers
 
 ```sh
 docker-compose up --build -d
@@ -43,41 +43,9 @@ docker-compose up --build -d
 
 This will build and start the Django application in a Docker container.
 
-### 5. Run Migrations
+### 4. Access the Application
 
-```sh
-docker-compose exec web python manage.py migrate
-```
-
-### 6. Create a Superuser (For Admin Access)
-
-```sh
-docker-compose exec web python manage.py createsuperuser
-```
-
-Follow the prompts to set up an admin account.
-
-### 7. Access the Application
-
-- The app will be running at: **http://127.0.0.1:8000**
-- The Django admin panel is at: **http://127.0.0.1:8000/admin**
-
-### 8. Stopping the Containers
-
-To stop the containers, run:
-
-```sh
-docker-compose down
-```
-
-## Additional Notes
-
-- If you experience any issues with dependencies taking too long, try rebuilding without cache:
-  ```sh
-  docker-compose build --no-cache
-  ```
-- If using Gmail for email, you may need to enable **Less Secure Apps** or generate an **App Password** in your Google account settings.
-
----
+- The app will be running at: **http://127.0.0.1:8080**
+- The Django admin panel is at: **http://127.0.0.1:8080/admin**
 
 This should ensure the system works properly with the required configuration. Let me know if you need any modifications!

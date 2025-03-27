@@ -75,11 +75,15 @@ WSGI_APPLICATION = 'customer_support.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
+load_dotenv() 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('POSTGRES_DB'),
+        'USER': os.getenv('POSTGRES_USER'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
+        'HOST': 'db',  # Ensure this matches the service name in docker-compose.yml
+        'PORT': '5432',  # Default PostgreSQL port
     }
 }
 
@@ -127,7 +131,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_REDIRECT_URL = 'ticket_list'  # Redirect after login
 LOGOUT_REDIRECT_URL = 'login'  # Redirect after logout
 # Email Configuration
-load_dotenv() 
+
 EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
 EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com")
 EMAIL_PORT = int(os.getenv("EMAIL_PORT", 465))
@@ -141,10 +145,12 @@ DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
 SITE_URL = os.getenv("SITE_URL") # Change to your actual domain in production
 
 # Redis broker for Celery
+broker_connection_retry_on_startup = True
 
-CELERY_BROKER_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+CELERY_BROKER_URL = os.getenv("REDIS_URL")
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
-
-# Use Django Celery Beat for periodic tasks
+CELERY_RESULT_BACKEND = os.getenv('CELERY_URL')
 INSTALLED_APPS += ['django_celery_beat']
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

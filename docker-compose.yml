@@ -1,31 +1,56 @@
+version: '3.8'
+
+networks:
+  customer_support_network:  # Define a custom network
+
 services:
+  db:
+    image: postgres
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - customer_support_network  # Connect to custom network
+
   web:
     build: .
-    container_name: customer_support_app
-    restart: always
-    ports:
-      - "8000:8000"
-    networks:
-      - custom_network
+    command: sh -c "python manage.py migrate && python seed_data.py && python manage.py runserver 0.0.0.0:8080"
     volumes:
-      - ./db.sqlite3:/app/db.sqlite3  # Ensure the database file persists
-
-  redis:
-    image: redis:latest
-    restart: always
+      - .:/app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    env_file:
+      - .env
     networks:
-      - custom_network
+      - customer_support_network  # Connect to custom network
 
   celery:
     build: .
-    container_name: customer_support_celery
     command: celery -A customer_support worker --loglevel=info
+    volumes:
+      - .:/app
     depends_on:
-      - redis
-      - web
+      - db
+    env_file:
+      - .env
     networks:
-      - custom_network
+      - customer_support_network  # Connect to custom network
 
-networks:
-  custom_network:
-    driver: bridge
+  celery-beat:
+    build: .
+    command: celery -A customer_support beat --loglevel=info
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+    env_file:
+      - .env
+    networks:
+      - customer_support_network  # Connect to custom network
+
+volumes:
+  postgres_data:
