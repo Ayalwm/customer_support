@@ -1,26 +1,54 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Update Ticket Status</h2>
-<p><strong>Current Status:</strong> {{ ticket.get_status_display }}</p>
+<div class="container mt-4" style="max-width: 600px;">
 
-<form method="post" style="max-width: 400px; padding: 15px; border: 1px solid #ddd; border-radius: 5px;">
-    {% csrf_token %}
-    
-    <label for="status" style="display: block; margin-bottom: 5px;">New Status:</label>
-    <select name="status" style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;">
-        <option value="open" {% if ticket.status == "open" %}selected{% endif %}>Open</option>
-        <option value="in_progress" {% if ticket.status == "in_progress" %}selected{% endif %}>In Progress</option>
-        <option value="closed" {% if ticket.status == "closed" %}selected{% endif %}>Closed</option>
-    </select>
+    <!-- Top navigation: Back to Tickets + Auth controls -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <a href="{% url 'ticket_list' %}" class="btn btn-outline-primary btn-sm">
+            &larr; Back to Tickets
+        </a>
+        
+        {% if user.is_authenticated %}
+            <form action="{% url 'logout' %}" method="post" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-danger">Logout</button>
+            </form>
+        {% else %}
+            <div>
+                <a href="{% url 'login' %}" class="btn btn-sm btn-outline-primary me-2">Login</a>
+                <a href="{% url 'register' %}" class="btn btn-sm btn-outline-secondary">Register</a>
+            </div>
+        {% endif %}
+    </div>
 
-    <button type="submit" style="display: block; width: 100%; padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer;">
-        Update Status
-    </button>
-</form>
+    <!-- Card with form -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h3 class="card-title text-primary mb-3">Update Ticket Status</h3>
+            <p><strong>Current Status:</strong> 
+                <span class="badge 
+                    {% if ticket.status == 'closed' %}bg-danger
+                    {% elif ticket.status == 'in_progress' %}bg-warning
+                    {% else %}bg-success{% endif %}">
+                    {{ ticket.get_status_display }}
+                </span>
+            </p>
 
-<a href="{% url 'ticket_list' %}" style="display: inline-block; margin-top: 10px; text-decoration: none; color: #007bff;">
-    ← Back to Tickets
-</a>
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="status" class="form-label">New Status:</label>
+                    <select name="status" id="status" class="form-select">
+                        <option value="open" {% if ticket.status == "open" %}selected{% endif %}>Open</option>
+                        <option value="in_progress" {% if ticket.status == "in_progress" %}selected{% endif %}>In Progress</option>
+                        <option value="closed" {% if ticket.status == "closed" %}selected{% endif %}>Closed</option>
+                    </select>
+                </div>
 
+                <button type="submit" class="btn btn-success w-100">Update Status</button>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}

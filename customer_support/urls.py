@@ -15,6 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.conf import settings
+from chat.views import ticket_chat_view
 from customer_support.views import register, user_logout
 from django.contrib import admin
 from django.urls import path, include
@@ -30,7 +31,8 @@ urlpatterns = [
     path('login/', auth_views.LoginView.as_view(template_name='registration/login.html', 
          redirect_authenticated_user=True), name='login'),
     path('logout/', user_logout, name='logout'),
-    
+    path('tickets/<int:ticket_id>/chat/', ticket_chat_view, name='ticket_chat_view'),  # <-- add this
+
     path("<int:ticket_id>/update/", update_ticket_status, name="update_ticket"),
 ]
 if settings.DEBUG:

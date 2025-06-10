@@ -9,6 +9,25 @@ from .forms import TicketForm, CommentForm
 
 from .models import Ticket, Comment
 from django.contrib.auth.models import AnonymousUser
+from chat.models import Message 
+from .models import Ticket
+from chat.models import Message 
+
+def ticket_list(request):
+    tickets = Ticket.objects.none()
+
+    if request.user.is_authenticated:
+        if request.user.is_staff:
+            tickets = Ticket.objects.all()
+        else:
+            tickets = Ticket.objects.filter(created_by=request.user)
+
+        # Attach related chat messages to each ticket
+        for ticket in tickets:
+            ticket.chat_messages = Message.objects.filter(ticket=ticket).select_related('sender').order_by('timestamp')
+
+    return render(request, 'support/ticket_list.html', {'tickets': tickets})
+
 def all_reviews(request):
     reviews = Comment.objects.all()  # Get all comments/reviews from the database
 
@@ -81,17 +100,6 @@ def send_ticket_update_email(ticket):
 
 def is_admin(user):
     return user.is_staff
-
-def ticket_list(request):
-    tickets = None  # Default value for anonymous users
-
-    if request.user.is_authenticated:
-        if request.user.is_staff:
-            tickets = Ticket.objects.all()  # Admin sees all tickets
-        else:
-            tickets = Ticket.objects.filter(created_by=request.user)  # Regular user sees their own tickets
-
-    return render(request, 'support/ticket_list.html', {'tickets': tickets})
 def create_ticket(request):
     if request.method == "POST":
         form = TicketForm(request.POST, request.FILES)  # ✅ Handling file uploads

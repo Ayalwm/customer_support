@@ -15,6 +15,9 @@ kombu==5.5.0
 pillow==11.1.0
 sqlalchemy
 celery[sqlalchemy]
+channels==4.0.0
+channels_redis==4.1.0
+daphne>=4.0,<5
 
 prompt_toolkit==3.0.50
 psycopg2-binary>=2.9,<3.0

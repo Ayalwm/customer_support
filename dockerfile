@@ -15,4 +15,5 @@ RUN pip install --no-cache-dir --upgrade pip \
 EXPOSE 8000
 
 # Run migrations and start the Django server
-CMD ["sh", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8080"]
+CMD ["sh", "-c", "python manage.py migrate && python seed_data.py && daphne -b 0.0.0.0 -p 8080 customer_support.asgi:application"]
+
