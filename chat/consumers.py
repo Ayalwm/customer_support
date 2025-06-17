@@ -1,6 +1,6 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
-from django.utils.timezone import now
+from django.utils import timezone
 from asgiref.sync import sync_to_async
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -16,61 +16,46 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
     async def receive(self, text_data):
-        data = json.loads(text_data)
-        message_type = data.get('type', 'chat_message')
-
-        if message_type == 'chat_message':
+        try:
+            data = json.loads(text_data)
             message = data['message']
-            await self.save_message(message)
+            
+            # Save message and get read status
+            message_id = await self.save_message(message)
+            
+            # Send message to group with read status
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
                     'type': 'chat_message',
                     'message': message,
                     'sender': self.user.username,
-                    'is_staff': self.user.is_staff,
+                    'message_id': message_id,
+                    'timestamp': timezone.now().isoformat(),
+                    'read': False  # Messages start unread
                 }
             )
-        elif message_type == 'typing':
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    'type': 'typing_indicator',
-                    'sender': self.user.username,
-                }
-            )
-        elif message_type == 'stop_typing':
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    'type': 'stop_typing_indicator',
-                    'sender': self.user.username,
-                }
-            )
+            
+        except Exception as e:
+            print("Error:", e)
 
     async def chat_message(self, event):
         await self.send(text_data=json.dumps({
             'type': 'chat_message',
             'message': event['message'],
             'sender': event['sender'],
-            'is_staff': event['is_staff'],
-        }))
-
-    async def typing_indicator(self, event):
-        await self.send(text_data=json.dumps({
-            'type': 'typing',
-            'sender': event['sender'],
-        }))
-
-    async def stop_typing_indicator(self, event):
-        await self.send(text_data=json.dumps({
-            'type': 'stop_typing',
-            'sender': event['sender'],
+            'message_id': event['message_id'],
+            'timestamp': event['timestamp'],
+            'read': event['read']
         }))
 
     @sync_to_async
-    def save_message(self, message):
-        from support.models import Ticket
-        from .models import Message
+    def save_message(self, message_content):
+        from .models import Message, Ticket
         ticket = Ticket.objects.get(id=self.ticket_id)
-        Message.objects.create(ticket=ticket, sender=self.user, content=message)
+        message = Message.objects.create(
+            ticket=ticket,
+            sender=self.user,
+            content=message_content
+        )
+        return message.id

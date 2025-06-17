@@ -1,116 +1,40 @@
 {% extends 'base.html' %}
-{% block style %}
-<style>
-    /* Reviews Container */
-    .reviews-container {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 20px;
-        max-width: 900px;
-        margin: 0 auto;
-        max-height: 500px;
-        overflow-y: auto;
-        padding: 15px;
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
-    }
-
-    /* Review Cards */
-    .review-card {
-        display: flex;
-        justify-content: space-between;
-        padding: 18px;
-        background: #ffffff;
-        border-radius: 8px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-        text-align: left;
-        transition: transform 0.2s ease-in-out;
-    }
-    .review-card:hover {
-        transform: translateY(-3px);
-    }
-
-    /* Review Info */
-    .review-info {
-        flex: 2;
-        padding-right: 20px;
-    }
-    .review-author {
-        font-weight: 600;
-        color: #007bff;
-        margin-bottom: 10px;
-    }
-    .guest-email {
-        display: inline-block;
-        background-color: #f4f4f4;
-        color: #333;
-        padding: 5px 12px;
-        border-radius: 20px;
-        font-size: 14px;
-        margin-bottom: 10px;
-        font-weight: bold;
-    }
-    .review-text {
-        padding: 10px;
-        font-size: 16px;
-        color: #333;
-    }
-
-    /* Review Rating */
-    .review-rating {
-        flex: 1;
-        text-align: right;
-        padding-top: 10px;
-    }
-    .stars {
-        font-size: 18px;
-        color: #f4c542;
-    }
-    .star {
-        font-size: 18px;
-    }
-    .filled {
-        color: #f4c542; /* Gold */
-    }
-    .empty {
-        color: #ccc;    /* Grey */
-    }
-
-    /* No Reviews */
-    .no-reviews {
-        font-size: 16px;
-        color: #777;
-        font-style: italic;
-        text-align: center;
-        grid-column: span 2;
-    }
-</style>
-{% endblock %}
 
 {% block content %}
-    <h2 class="mb-4">User Reviews &amp; Feedback</h2>
+<div class="container my-5">
+  <h2 class="mb-4">User Reviews &amp; Feedback</h2>
 
-    <div class="reviews-container">
-        {% for comment in reviews %}
-            <div class="review-card">
-                <div class="review-info">
-                    {% if comment.user %}
-                        <div class="review-author">{{ comment.user.username }}</div>
-                    {% else %}
-                        <div class="guest-email">{{ comment.email }}</div>
-                    {% endif %}
-                    <div class="review-text">"{{ comment.comment }}"</div>
-                </div>
-                <div class="review-rating">
-                    <div class="stars">
-                        {% for i in comment.stars_filled %} <span class="star filled">★</span> {% endfor %}
-                        {% for i in comment.stars_empty  %} <span class="star empty">☆</span> {% endfor %}
-                    </div>
-                </div>
+  {% if reviews %}
+    <div class="row row-cols-1 row-cols-md-2 g-4">
+      {% for comment in reviews %}
+        <div class="col">
+          <div class="card h-100 shadow-sm">
+            <div class="card-body">
+              {% if comment.user %}
+                <h5 class="card-title text-primary mb-2">{{ comment.user.username }}</h5>
+              {% else %}
+                <span class="badge bg-light text-dark mb-2">{{ comment.email }}</span>
+              {% endif %}
+
+              <p class="card-text">"{{ comment.comment }}"</p>
+
+              <div class="text-end">
+                {% for i in comment.stars_filled %}
+                  <span class="text-warning">★</span>
+                {% endfor %}
+                {% for i in comment.stars_empty %}
+                  <span class="text-secondary">☆</span>
+                {% endfor %}
+              </div>
             </div>
-        {% empty %}
-            <p class="no-reviews">No reviews yet. Be the first to share your feedback!</p>
-        {% endfor %}
+          </div>
+        </div>
+      {% endfor %}
     </div>
+  {% else %}
+    <div class="alert alert-info text-center mt-4">
+      No reviews yet. Be the first to share your feedback!
+    </div>
+  {% endif %}
+</div>
 {% endblock %}

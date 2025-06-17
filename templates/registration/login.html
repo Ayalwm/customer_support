@@ -1,27 +1,29 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="auth-wrapper">
-    <div class="auth-card">
-        <h2 class="text-center text-primary mb-4">Login</h2>
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+  <div class="card shadow-sm p-4" style="width: 100%; max-width: 420px;">
 
-        <form method="post" novalidate>
-            {% csrf_token %}
-            {% for field in form %}
-                <div class="mb-3">
-                    <label class="form-label">{{ field.label }}</label>
-                    {{ field }}
-                    {% if field.errors %}
-                        <div class="text-danger small mt-1">{{ field.errors|striptags }}</div>
-                    {% endif %}
-                </div>
-            {% endfor %}
-            <button type="submit" class="btn btn-primary w-100">Login</button>
-        </form>
+    <h2 class="text-center text-primary mb-4">Login</h2>
 
-        <p class="text-center mt-3">
-            Don't have an account? <a href="{% url 'register' %}">Register here</a>.
-        </p>
-    </div>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="mb-3">
+          <label class="form-label">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}
+            <div class="text-danger small mt-1">{{ field.errors|striptags }}</div>
+          {% endif %}
+        </div>
+      {% endfor %}
+
+      <button type="submit" class="btn btn-primary w-100">Login</button>
+    </form>
+
+    <p class="text-center mt-3 mb-0">
+      Don’t have an account? <a href="{% url 'register' %}">Register here</a>.
+    </p>
+  </div>
 </div>
 {% endblock %}
